@@ -6,6 +6,10 @@ goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/N
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-11-05
+
+The environment check keeps working when goldpan is installed from PyPI (NSDF-Data pins it there from now on); no other function changed.
+
 ### Changed
 
 - `check_environment` finds the `requirements.txt` of NSDF-Data by looking in the current folder and each folder above it (then above the module), so it works from a notebook, from `python -m check_environment` in the NSDF-Data folder, and when goldpan is installed from PyPI and no longer sits in the checkout. A file only counts if it names `nsdf-dark-matter`. New: `find_requirements()`, `--requirements FILE`, and `goldpan[extras]==X` lines are read by the package name.
