@@ -1,13 +1,13 @@
-# python/
+# goldpan
 
-**goldpan**: a library of reusable pulse operations, cuts and derived quantities, factored out of the exploratory work
-in `data_analysis/R76/notebooks/`. It is a Python package, `goldpan`, in the folder `python/goldpan/`.
+**goldpan**: a library of reusable pulse operations, cuts and derived quantities for SuperCDMS-type traces, factored out of
+the exploratory work of the NSDF-Data project (https://github.com/villano-lab/NSDF-Data). It is the Python package `goldpan`
+in `src/goldpan/`. Its companion for reducing whole datasets is [goldsluice](https://github.com/villano-lab/NSDF-Data/tree/main/goldsluice).
 
-**Install it** (it is part of the setup): `requirements.txt` installs this folder in place, so `pip install -r
-requirements.txt`, run from the `NSDF-Data` folder as the setup and updating guides do (or only the library:
-`python -m pip install -e ./python`), makes it importable from any folder, with no `sys.path` snippet. An edit to a
-module takes effect at once. `check_environment.py` warns if it is not installed. The library has its own version, in
-`python/pyproject.toml`.
+**Install it:** `python -m pip install goldpan` (from PyPI), with the extras you need: `goldpan[archive]` (HDF5),
+`goldpan[parquet]` (the native format), `goldpan[root]` (RQs in ROOT files), `goldpan[midas]` (MIDAS files). To work on it,
+clone this repository and `python -m pip install -e ".[archive,parquet,root,midas]" pytest`; an edit to a module then takes
+effect at once. `check_environment.py` warns if it is not installed. How to contribute: `CONTRIBUTING.md`.
 
 ```python
 from goldpan import quantities as q
@@ -36,15 +36,15 @@ quiet = ev.select(cuts.quiet_baseline(ev.trace("A"), ev.detector.readout.config(
 specification, format version 1: one Parquet file per series and dump, plain Arrow types, a `_goldpan.json` manifest), and `goldpan.adapters.idx` reads
 a dump of the NSDF archive. `read` returns an `Events`; `iter_chunks` reads a big dataset a chunk at a time. Someone with another format (MIDAS, ROOT) writes
 a small module with `read(path, **kw) -> Events` and checks it with `goldpan.testing.check_adapter`; `goldpan.adapters.register` makes it available
-to `goldpan.adapters.read(path, format=...)`. How to write one, step by step, with a tested example (`python/tests/example_adapter.py`): the developer quick-sheet
-`docs/developers/writing-an-adapter.pdf`. A small synthetic dataset to test against is in `python/tests/data/sample_dataset/`.
+to `goldpan.adapters.read(path, format=...)`. How to write one, step by step, with a tested example (`tests/example_adapter.py`): the developer quick-sheet
+`writing-an-adapter.pdf` in the NSDF-Data repository (`docs/developers/`). A small synthetic dataset to test against is in `tests/data/sample_dataset/`.
 
 ```python
 from goldpan.adapters import idx, parquet
 from goldpan.channels import sensor_channels
 channels = {c.name: (c.detector, c.channel) for c in sensor_channels()}
 ev = idx.read('~/idx/07221203_2025_F0001', detector_name='NSDF', channels=channels, config=DCRC_RUN76)   # the readout is given, never assumed
-parquet.write(ev, 'my_dataset')                      # needs the extra: pip install pyarrow (in requirements.txt)
+parquet.write(ev, 'my_dataset')                      # needs the extra: pip install pyarrow (or `pip install goldpan[parquet]`)
 for chunk in parquet.iter_chunks('my_dataset', chunk=256): ...   # or parquet.read('my_dataset', channels=['Side2pC'])
 ```
 
@@ -61,10 +61,10 @@ the same events, matched on the key (refusing missing events, duplicate rows and
 
 **The RQs of a whole list of series, cached.** `goldpan.rqdata.load(dataset, rqs)` has the call of the collaboration's `rqdata`: `data = load("24260424_145101", ["EventType", "PTOFamps", "P*max"])`, then `data["PTOFamps"]` is one numpy array over every event of every series (a series name, a list of them, or a CSV with a `series` column), `data["series"]` says where each row came from and `data.files` which file was read. The second `load` comes from a cache in `~/.cache/goldpan/rqdata` (`$GOLDPAN_CACHE`), keyed on the size and modification time of the files and on the goldpan version, so a rewritten file is read again; asking for fewer RQs than a cached read has is free, `refresh=True` reads again, `cache=False` skips the cache, and `cache_info()` / `cache_clear()` manage it. Where the files are is not in the library: set `GOLDPAN_RQ_FILES` (a pattern with `{series}`) and `GOLDPAN_RQ_DETECTOR` once, or pass `files=` and `detector=`. A series stored as many files (the dumps of Run 76: `07221203_2025_F0001.root`, ...) is `files=".../{series}_F*.root"` with `all_files=True`.
 
-**Synthetic data in every format.** `python python/tests/synthetic_series.py OUTDIR` writes one small made-up series (two dumps, six Side-2
+**Synthetic data in every format.** `python tests/synthetic_series.py OUTDIR` writes one small made-up series (two dumps, six Side-2
 sensors plus the other DCRC inputs, 4096 samples at 0.8 us) as an idx dump, as SuperCDMS SNOLAB MIDAS files (`.mid.gz`, CDMS I/O library format version 8),
 as RQs in Parquet and in ROOT (`rqDir/eventTree` and `rqDir/zip1`), and as a native goldpan dataset, all from the same events, so that every adapter and
-every cross-format check has data to read. Nothing in it is detector data. `python/tests/test_synthetic_series.py` uses it.
+every cross-format check has data to read. Nothing in it is detector data. `tests/test_synthetic_series.py` uses it.
 
 **Algorithms from the collaboration library.** `goldpan.rq_cuts` selects clean random triggers and calibration lines from already-processed RQs
 (`phonon_log_ratios`, `pileup_randoms`, `loose_randoms`, `tight_randoms`, `calibration_line`): the thresholds and windows are analysis results and are
@@ -85,17 +85,7 @@ difference: the functions that take a `config` default to the Run 76 readout, an
 Run 76 values as defaults. So `import pulse_cuts as pc; pc.quiet_baseline(pulses)` is the same as `goldpan.cuts.quiet_baseline(pulses,
 DCRC_RUN76)`. New code uses `goldpan.*`; the flat names will be removed in a later release.
 
-If the library is not installed (a checkout used without `pip install`), the fallback is to put the folder on `sys.path`:
-
-```python
-import sys
-from pathlib import Path
-
-_here = Path.cwd().resolve()
-REPO = next((p for p in [_here, *_here.parents] if (p / "python" / "pulse_io.py").exists()), None)
-assert REPO, "Start Jupyter from inside the NSDF-Data folder."
-sys.path.insert(0, str(REPO / "python"))
-```
+The old flat names (`import pulse_cuts`) are installed by the same package, as aliases of `goldpan.*`.
 
 ## Convention: samples on the last axis
 
@@ -152,7 +142,7 @@ for Side-2 readout there are six, all on Side 2. What changed, by dump channel `
 `goldpan.archive` is a fifth, separate module: it persists a cut's *result*
 (which `detector_id`s it selected, for a given series/detector/channel) to an
 HDF5 file, rather than computing something from pulse data -- see its own
-docstring and `data_analysis/archives/README.md`. It's the only module
+docstring and `data_analysis/archives/README.md` in NSDF-Data. It's the only module
 that needs `h5py`.
 
 ## `PulseConfig` and the readout
@@ -161,7 +151,7 @@ A frozen dataclass (`pretrigger_samples`, `glitch_samples`, `sample_period_s`) p
 of each notebook hardcoding its own copy of these constants. **In `goldpan.config` it has no defaults** (pass
 `sample_period_s=None` if the period is unknown: functions that need it then raise). The presets are
 `DCRC_RUN76 = PulseConfig(500, 10, 0.8e-6)` and `Z7 = PulseConfig(6250, 10, 1.6e-6)` (the same readouts, with the evidence for
-each number, are in `registry/readouts.toml`; the Run 76 pulses start at about sample 500, so the pretrigger window ends there,
+each number, are in `registry/readouts.toml` of NSDF-Data; the Run 76 pulses start at about sample 500, so the pretrigger window ends there,
 which was 1000 until 2026-10-28, issue 154). In the flat alias `pulse_config`, `PulseConfig()` keeps the values the notebooks were
 run with, 1000-sample window included (see above).
 

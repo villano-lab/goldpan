@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-PYTHON_DIR = Path(__file__).resolve().parent.parent
+PYTHON_DIR = Path(__file__).resolve().parent.parent / "src"
 TESTS_DIR = Path(__file__).resolve().parent
 # Library modules: the files of the package `goldpan`. `status` is the decorator itself, `legacy` builds the old flat
 # names (the flat `pulse_*.py` files are one-line aliases of the package), and helpers such as check_environment.py
