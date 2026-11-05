@@ -6,6 +6,10 @@ goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/N
 
 ## [Unreleased]
 
+### Added
+
+- The documentation of goldpan (Sphinx, `docs/`): how the pieces fit, guides, and the reference read from the docstrings, at https://villano-lab.github.io/goldpan/. A workflow builds it with warnings as errors for every pull request that touches `docs/`, `src/` or `pyproject.toml`, and deploys it to GitHub Pages when a release reaches `main` (or when run by hand). It replaces the pages `docs/api/` that NSDF-Data built from this package. The *Documentation* link of the package on PyPI points here from the next release.
+
 ## [0.3.2] - 2026-11-05
 
 The environment check keeps working when goldpan is installed from PyPI (NSDF-Data pins it there from now on); no other function changed.

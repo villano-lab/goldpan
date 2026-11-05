@@ -27,6 +27,7 @@ The maintainer is Anthony Villano (@villaa).
 - Write commit messages that say what changed and why. If an AI assistant helped, add a `Co-Authored-By:` trailer naming it.
 - Never commit raw data, credentials or tokens.
 - Every public function has `@status(DONE)` or `@status(UNDER_DEVELOPMENT, note=...)` and is mentioned in a test.
+- Docstrings are read by Sphinx as reStructuredText, with single backticks shown as code: a literal block needs `::` before it, a name in backticks may not be followed by a letter (write "`Segment` objects", not "`Segment`s"), and a `|` or `*` in running text needs backticks. Check with the build in `CONTRIBUTING.md`; the documentation check fails a pull request that breaks it. The pages in `docs/` are hand-written; the reference is generated, never written by hand.
 - A new key of the dataset definition (`src/goldpan/dataset.py`, whose docstring is the specification) raises `FORMAT_VERSION`, updates the docstring and gets a test in `tests/test_goldpan_dataset.py`. Unknown keys are refused on purpose: do not make the reader lenient. Same for the registry reader (`registry.py`): a new key raises its `FORMAT_VERSION`; a name defined twice is an error on purpose.
 - A fix that changes what an existing adapter returns for the same file raises its `REVISION` by one in the same pull request (`goldsluice run` then redoes the outputs made with it).
 - A breaking change (a rename or removal) is announced in `CHANGELOG.md`, and the notebooks of NSDF-Data that use the name are updated or marked deprecated there.
