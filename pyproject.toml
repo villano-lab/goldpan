@@ -37,6 +37,7 @@ root = ["uproot"]
 midas = ["lz4"]
 
 [tool.setuptools]
+package-dir = {"" = "src"}
 packages = ["goldpan", "goldpan.adapters"]
 # The flat names of the first versions, as aliases of the package modules (to be removed in a later release), and the
 # environment check, which the first-analysis guide imports.
