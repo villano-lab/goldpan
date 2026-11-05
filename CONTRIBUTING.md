@@ -21,6 +21,7 @@ Rules:
 - Only a `release/*` or `hotfix/*` branch changes the version in `pyproject.toml` or renames `[Unreleased]`.
 - The tests (`python -m pytest`, after `python -m pip install -e ".[archive,parquet,root,midas]" pytest`) run on Linux, Windows and macOS for every pull request; they must pass.
 - Every public function has a `@status(...)` tag and is mentioned in a test (`tests/test_library_conventions.py` checks it).
+- The documentation (`docs/`, Sphinx) is built for every pull request that touches `docs/`, `src/` or `pyproject.toml`, with warnings as errors, and published at https://villano-lab.github.io/goldpan/ when a release reaches `main`. To build it on your computer: `python -m pip install -r docs/requirements.txt`, `python -m pip install -e ".[archive,parquet,root,midas]"`, then `python -m sphinx -b html -W --keep-going docs docs/_build/html`.
 
 ## A feature
 

@@ -3,3 +3,7 @@ __pycache__/
 build/
 dist/
 .pytest_cache/
+
+# Built documentation
+docs/_build/
+docs/reference/generated/

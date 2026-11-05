@@ -20,7 +20,7 @@ dependencies = ["numpy", "awkward"]
 
 [project.urls]
 Homepage = "https://github.com/villano-lab/goldpan"
-Documentation = "https://villano-lab.github.io/NSDF-Data/api/"
+Documentation = "https://villano-lab.github.io/goldpan/"
 Repository = "https://github.com/villano-lab/goldpan"
 Changelog = "https://github.com/villano-lab/goldpan/blob/main/CHANGELOG.md"
 
