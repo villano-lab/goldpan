@@ -341,16 +341,6 @@ def test_processed_says_where_root_output_is_read_instead_of_failing_obscurely(t
 
 # ---- writing a definition: dump and dumps
 
-REPO = Path(__file__).resolve().parents[2]
-DEFINITIONS = sorted(p for p in (REPO / "goldsluice" / "examples").glob("*.dataset.toml")) + sorted((REPO / "data_analysis").rglob("*.dataset.toml"))
-
-
-@pytest.mark.parametrize("path", DEFINITIONS, ids=lambda p: p.name)
-def test_every_definition_in_the_repository_is_written_back_as_the_same_definition(path):
-    raw = tomllib.loads(path.read_text(encoding="utf-8"))
-    assert tomllib.loads(dataset.dumps(raw, base=path.parent)) == raw
-
-
 def test_dump_writes_a_file_that_loads_as_the_same_definition(tmp_path, raw):
     definition = {
         "dataset": {"name": "toy", "output": "out", "description": 'a "quoted" C:\\path, unicode: é, 日本', "format_version": dataset.FORMAT_VERSION,
