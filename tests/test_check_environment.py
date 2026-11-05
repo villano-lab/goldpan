@@ -105,3 +105,45 @@ def test_check_warns_when_the_pulse_library_is_not_installed(tmp_path):
     problems = ce.check(requirements=_library_requirements(tmp_path), stream=out)
     assert any("demo-pulse-library is not installed (requirements.txt wants 0.1.0)" in p for p in problems)
     assert out.getvalue().startswith("WARNING")
+
+
+def test_parse_requirements_leaves_the_extras_out_of_the_name():
+    text = "goldpan[archive,parquet,root,midas]==0.3.2\nnumpy==2.2.6 ; python_version >= '3.12'\nh5py[extra]\n"
+    assert ce.parse_requirements(text) == {"goldpan": "0.3.2", "numpy": "2.2.6", "h5py": None}
+
+
+def _checkout(tmp_path):
+    (tmp_path / "requirements.txt").write_text("nsdf-dark-matter==0.3.1\ngoldpan[archive]==0.3.2\n", encoding="utf-8")
+    deep = tmp_path / "data_analysis" / "R76" / "student" / "someone"
+    deep.mkdir(parents=True)
+    return deep
+
+
+def test_find_requirements_walks_up_from_a_notebook_folder(tmp_path):
+    deep = _checkout(tmp_path)
+    assert ce.find_requirements(deep) == tmp_path.resolve() / "requirements.txt"
+
+
+def test_find_requirements_ignores_another_projects_list(tmp_path):
+    (tmp_path / "requirements.txt").write_text("numpy\npandas\n", encoding="utf-8")        # no nsdf-dark-matter: not ours
+    inner = tmp_path / "project"
+    inner.mkdir()
+    found = ce.find_requirements(inner)
+    assert found is None or found != tmp_path.resolve() / "requirements.txt"
+
+
+def test_check_finds_requirements_from_the_current_folder(tmp_path, monkeypatch):
+    deep = _checkout(tmp_path)
+    monkeypatch.chdir(deep)
+    monkeypatch.setattr(ce, "REQUIREMENTS", None)
+    out = io.StringIO()
+    ce.check(stream=out)
+    assert "was not found" not in out.getvalue()
+
+
+def test_main_takes_a_requirements_file_and_is_strict_on_request(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(ce, "REQUIREMENTS", None)
+    (tmp_path / "list.txt").write_text("a-package-that-is-not-installed-anywhere==1.0\n", encoding="utf-8")
+    assert ce.main(["--requirements", str(tmp_path / "list.txt")]) == 0
+    assert ce.main(["--requirements", str(tmp_path / "list.txt"), "--strict"]) == 1
+    assert "a-package-that-is-not-installed-anywhere is not installed" in capsys.readouterr().out

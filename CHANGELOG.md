@@ -6,6 +6,11 @@ goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/N
 
 ## [Unreleased]
 
+### Changed
+
+- `check_environment` finds the `requirements.txt` of NSDF-Data by looking in the current folder and each folder above it (then above the module), so it works from a notebook, from `python -m check_environment` in the NSDF-Data folder, and when goldpan is installed from PyPI and no longer sits in the checkout. A file only counts if it names `nsdf-dark-matter`. New: `find_requirements()`, `--requirements FILE`, and `goldpan[extras]==X` lines are read by the package name.
+- The test that wrote every `*.dataset.toml` of NSDF-Data back as the same definition looked for `goldsluice/examples` and `data_analysis` above this repository; it belongs to NSDF-Data and moved there.
+
 ## [0.3.1] - 2026-11-05
 
 The first release made from this repository. The code is the same as 0.3.0 (the wheel was compared file by file with the one on PyPI: the same 34 files, the same contents); what changes is where goldpan lives and how it is published. `pip install goldpan` is unchanged.

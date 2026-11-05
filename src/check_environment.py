@@ -1,19 +1,21 @@
 """Check that this Python environment is the one the NSDF-Data guides expect.
 
 It compares the Python version and the packages listed in `requirements.txt` (at the top of the repository)
-with what is installed (including the pulse library in `python/`, which `requirements.txt` installs in place),
-and says what differs and where to read how to fix it. It only ever **warns**: it
+with what is installed (including `goldpan` itself, which `requirements.txt` pins like any other package),
+and says what differs and where to read how to fix it. It finds `requirements.txt` by looking in the current folder and then in
+each folder above it, so it works from the NSDF-Data folder, from a notebook inside it, and from any folder of a clone. It only ever **warns**: it
 never raises and never stops a notebook, so a student on an older setup can still finish their work.
 
-In a notebook (after the library folder is on `sys.path`, as in the first-analysis guide)::
+In a notebook (goldpan is installed, so this works anywhere, as in the first-analysis guide)::
 
     import check_environment
     check_environment.check()
 
-From a terminal, in the repository's `python` folder::
+From a terminal, in the NSDF-Data folder (or any folder inside it)::
 
-    python check_environment.py            # prints OK or the warnings; always exits 0
-    python check_environment.py --strict   # exits 1 if anything differs (used by CI)
+    python -m check_environment                          # prints OK or the warnings; always exits 0
+    python -m check_environment --strict                 # exits 1 if anything differs (used by CI)
+    python -m check_environment --requirements FILE      # check against another requirements file
 
 Only the standard library is used, so it works in any environment, including an old one.
 """
@@ -30,7 +32,7 @@ from pulse_status import status, DONE
 EXPECTED_PYTHON = (3, 12)
 
 GUIDE_URL = "https://villano-lab.github.io/NSDF-Data/#maintenance"
-REQUIREMENTS = Path(__file__).resolve().parent.parent / "requirements.txt"
+REQUIREMENTS = None     # a path to use instead of searching (the tests set it); None: `find_requirements()`
 
 
 @status(DONE)
@@ -38,29 +40,57 @@ def parse_requirements(text: str) -> dict:
     """`{package name: pinned version or None}` from the text of a requirements file.
 
     A line `numpy==2.2.6` gives `{"numpy": "2.2.6"}`; a bare name such as `pytest` gives `{"pytest": None}`.
-    Blank lines, `#` comments and option lines (such as `-e ./python`) are ignored.
+    Blank lines, `#` comments and option lines (such as `-e ./python`) are ignored. Extras and environment markers are not
+    part of the name: `goldpan[archive,parquet]==0.3.2` gives `{"goldpan": "0.3.2"}`.
     """
     pins = {}
     for line in text.splitlines():
         line = line.split("#")[0].strip()
         if not line or line.startswith("-"):    # blank, or an option such as `-e ./python`
             continue
+        line = line.split(";")[0].strip()        # an environment marker is not part of the name or the version
         if "==" in line:
             name, version = line.split("==", 1)
-            pins[name.strip()] = version.strip()
+            pins[re.split(r"\[", name.strip())[0].strip()] = version.strip()
         else:
-            pins[line] = None
+            pins[re.split(r"\[", line)[0].strip()] = None
     return pins
 
 
 @status(DONE)
-def library_pins(requirements=REQUIREMENTS) -> dict:
+def find_requirements(start=None):
+    """The `requirements.txt` of the NSDF-Data checkout, or `None` if there is none to be found.
+
+    Looks in `start` (default: the current folder) and in each folder above it, then in the folders above this module (a
+    checkout that runs the script in place). Only a file that names `nsdf-dark-matter` counts, so that another project's
+    `requirements.txt` higher up is never read as the guides' list.
+    """
+    for base in (Path(start) if start is not None else Path.cwd(), Path(__file__).resolve().parent):
+        try:
+            base = base.resolve()
+        except OSError:
+            continue
+        for folder in (base, *base.parents):
+            candidate = folder / "requirements.txt"
+            try:
+                if candidate.is_file() and "nsdf-dark-matter" in candidate.read_text(encoding="utf-8"):
+                    return candidate
+            except OSError:
+                continue
+    return None
+
+
+@status(DONE)
+def library_pins(requirements=None) -> dict:
     """`{name: version}` of the library that `requirements.txt` installs in place (a line like `-e ./python[archive]`).
 
     The name and version are read from that folder's `pyproject.toml`, so `check` can say when the pulse library is not
     installed, or is an older version than the checkout. Returns `{}` if there is no such line or the file is unreadable.
     Plain text matching is used (no `tomllib`) so that this works in an old environment too.
     """
+    requirements = requirements or REQUIREMENTS or find_requirements()
+    if requirements is None:
+        return {}
     base = Path(requirements).resolve().parent
     try:
         lines = Path(requirements).read_text(encoding="utf-8").splitlines()
@@ -114,19 +144,21 @@ def find_problems(pins: dict, python_version=None, expected_python=EXPECTED_PYTH
 
 
 @status(DONE)
-def check(requirements=REQUIREMENTS, stream=None) -> list:
+def check(requirements=None, stream=None) -> list:
     """Print whether this environment matches the guides, and return the list of problems (empty if it does).
 
-    Warning only: this never raises. If `requirements.txt` cannot be found, only the Python version is checked,
+    `requirements` is the file to check against; by default `find_requirements()` looks for it from the current folder
+    upwards. Warning only: this never raises. If `requirements.txt` cannot be found, only the Python version is checked,
     and it says so.
     """
     out = stream if stream is not None else sys.stdout
+    requirements = requirements or REQUIREMENTS or find_requirements()
     pins, note = {}, None
     try:
         pins = parse_requirements(Path(requirements).read_text(encoding="utf-8"))
-    except OSError:
+        pins.update(library_pins(requirements))   # a library that requirements.txt installs in place (an old checkout)
+    except (OSError, TypeError):
         note = "requirements.txt was not found, so only the Python version was checked."
-    pins.update(library_pins(requirements))   # the pulse library in python/, installed in place
     problems = find_problems(pins)
     version = "%d.%d.%d" % tuple(sys.version_info[:3])
     if not problems:
@@ -144,8 +176,12 @@ def check(requirements=REQUIREMENTS, stream=None) -> list:
 
 
 def main(argv=None) -> int:
-    argv = sys.argv[1:] if argv is None else argv
-    problems = check()
+    argv = list(sys.argv[1:] if argv is None else argv)
+    requirements = None
+    if "--requirements" in argv:
+        at = argv.index("--requirements")
+        requirements = argv[at + 1] if at + 1 < len(argv) else None
+    problems = check(requirements) if requirements else check()
     return 1 if (problems and "--strict" in argv) else 0
 
 
