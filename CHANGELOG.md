@@ -1,0 +1,16 @@
+# Changelog
+
+All notable changes to goldpan. The format follows [Keep a Changelog](https://keepachangelog.com/), the versions follow [semantic versioning](https://semver.org/).
+
+goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/NSDF-Data) until 2026-11-05. Its history up to then is kept in this repository, and the changes of the releases made there (0.1.0 to 0.3.0) are in the `CHANGELOG.md` of NSDF-Data, on the lines that say `goldpan X.Y.Z`.
+
+## [Unreleased]
+
+### Changed
+
+- goldpan is a repository of its own, `villano-lab/goldpan`, with the history of `python/`. The code is in `src/` (the package `goldpan` and the flat aliases `pulse_*.py`). Nothing in the package changed: the wheel has the same contents as 0.3.0.
+- The tests of the tools, the notes, the registry data and the guides of NSDF-Data stay there (`tests/` of NSDF-Data); the tests of the library are in `tests/` here.
+
+## [0.3.0] - 2026-11-04
+
+The last release made from NSDF-Data. Dataset definition format 7 (a step can name its `sources`, steps build on each other, run metadata is joined at read time), `dataset.dump`, `registry.add_record`, `runmeta`, `rqdata` with `all_files=True`, and the 500-sample Run 76 readout. Details: the `goldpan 0.3.0` line of `CHANGELOG.md` in NSDF-Data, release 0.11.0.
