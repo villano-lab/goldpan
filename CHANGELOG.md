@@ -6,6 +6,15 @@ goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/N
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-05
+
+The first release made from this repository. The code is the same as 0.3.0 (the wheel was compared file by file with the one on PyPI: the same 34 files, the same contents); what changes is where goldpan lives and how it is published. `pip install goldpan` is unchanged.
+
+### Added
+
+- The tags `v0.2.0` and `v0.3.0` (the releases `goldpan-v0.2.0` and `goldpan-v0.3.0` of NSDF-Data, on the same commits of the kept history) and a GitHub Release for each.
+- `LICENSE`, `CONTRIBUTING.md`, `AGENTS.md`, CI on Linux, Windows and macOS, and the publish workflow (`.github/workflows/publish-goldpan.yml`, `tools/check_release.py`): a tag `vX.Y.Z` builds the wheel and the source archive, tests the wheel in a clean environment and, after the maintainer approves the `pypi` environment, uploads with a trusted publisher.
+
 ### Changed
 
 - goldpan is a repository of its own, `villano-lab/goldpan`, with the history of `python/`. The code is in `src/` (the package `goldpan` and the flat aliases `pulse_*.py`). Nothing in the package changed: the wheel has the same contents as 0.3.0.
