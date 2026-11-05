@@ -2,7 +2,7 @@
 
 All notable changes to goldpan. The format follows [Keep a Changelog](https://keepachangelog.com/), the versions follow [semantic versioning](https://semver.org/).
 
-goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/NSDF-Data) until 2026-11-05. Its history up to then is kept in this repository, and the changes of the releases made there (0.1.0 to 0.3.0) are in the `CHANGELOG.md` of NSDF-Data, on the lines that say `goldpan X.Y.Z`.
+goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/NSDF-Data) until 2026-11-05. Its history up to then is kept in this repository, and the changes of the releases made there (0.2.0 and 0.3.0) are in the `CHANGELOG.md` of NSDF-Data, on the lines that say `goldpan X.Y.Z`.
 
 ## [Unreleased]
 
