@@ -2,9 +2,18 @@
 
 All notable changes to goldpan. The format follows [Keep a Changelog](https://keepachangelog.com/), the versions follow [semantic versioning](https://semver.org/).
 
-goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/NSDF-Data) until 2026-11-05. Its history up to then is kept in this repository, and the changes of the releases made there (0.1.0 to 0.3.0) are in the `CHANGELOG.md` of NSDF-Data, on the lines that say `goldpan X.Y.Z`.
+goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/NSDF-Data) until 2026-11-05. Its history up to then is kept in this repository, and the changes of the releases made there (0.2.0 and 0.3.0) are in the `CHANGELOG.md` of NSDF-Data, on the lines that say `goldpan X.Y.Z`.
 
 ## [Unreleased]
+
+## [0.3.1] - 2026-11-05
+
+The first release made from this repository. The code is the same as 0.3.0 (the wheel was compared file by file with the one on PyPI: the same 34 files, the same contents); what changes is where goldpan lives and how it is published. `pip install goldpan` is unchanged.
+
+### Added
+
+- The tags `v0.2.0` and `v0.3.0` (the releases `goldpan-v0.2.0` and `goldpan-v0.3.0` of NSDF-Data, on the same commits of the kept history) and a GitHub Release for each.
+- `LICENSE`, `CONTRIBUTING.md`, `AGENTS.md`, CI on Linux, Windows and macOS, and the publish workflow (`.github/workflows/publish-goldpan.yml`, `tools/check_release.py`): a tag `vX.Y.Z` builds the wheel and the source archive, tests the wheel in a clean environment and, after the maintainer approves the `pypi` environment, uploads with a trusted publisher.
 
 ### Changed
 
