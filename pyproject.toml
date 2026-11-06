@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "goldpan"
-version = "0.3.3"
+version = "0.3.4"
 description = "Pulse operations, cuts and derived quantities for SuperCDMS-type traces (NSDF-Data)."
 readme = "README.md"
 license = "MIT"
