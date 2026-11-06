@@ -6,6 +6,10 @@ goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/N
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-11-06
+
+The code is the code of 0.3.3 (only a docstring changed). This release publishes the guide pages of the documentation.
+
 ### Changed
 
 - The guide *Writing an adapter* is a page of this documentation (`docs/guides/writing-an-adapter.md`); it was a quick-sheet of NSDF-Data. The batch-mode guide is in the goldsluice documentation.
