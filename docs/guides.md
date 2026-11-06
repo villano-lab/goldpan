@@ -1,11 +1,15 @@
 # Guides
 
-Step-by-step guides, as quick-sheets with a web page and a printable PDF. They are part of the NSDF-Data project site; the links go there.
+Step-by-step pages for the people who work on or with goldpan.
 
-## goldpan
+```{toctree}
+:maxdepth: 1
 
-- [Writing an adapter](https://villano-lab.github.io/NSDF-Data/developers/writing-an-adapter.html): so that goldpan reads another file format.
-- [Batch mode: define a dataset, process it, read it back](https://villano-lab.github.io/NSDF-Data/developers/goldsluice-batch.html): the dataset definition file, `check` and `run` of goldsluice, and reading the result with goldpan.
+guides/writing-an-adapter
+```
+
+- {doc}`guides/writing-an-adapter`: so that goldpan reads another file format.
+- [Batch mode: define a dataset, process it, read it back](https://villano-lab.github.io/goldsluice/guides/batch.html): the dataset definition file (specified by {doc}`reference/generated/goldpan.dataset`), `check` and `run` of goldsluice, and reading the result with goldpan. It is a page of the goldsluice documentation because it is mostly about running goldsluice.
 
 ## Working on goldpan
 
