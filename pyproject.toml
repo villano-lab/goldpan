@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "goldpan"
-version = "0.3.2"
+version = "0.3.3"
 description = "Pulse operations, cuts and derived quantities for SuperCDMS-type traces (NSDF-Data)."
 readme = "README.md"
 license = "MIT"
@@ -20,7 +20,7 @@ dependencies = ["numpy", "awkward"]
 
 [project.urls]
 Homepage = "https://github.com/villano-lab/goldpan"
-Documentation = "https://villano-lab.github.io/NSDF-Data/api/"
+Documentation = "https://villano-lab.github.io/goldpan/"
 Repository = "https://github.com/villano-lab/goldpan"
 Changelog = "https://github.com/villano-lab/goldpan/blob/main/CHANGELOG.md"
 

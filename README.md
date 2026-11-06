@@ -7,7 +7,7 @@ in `src/goldpan/`. Its companion for reducing whole datasets is [goldsluice](htt
 **Install it:** `python -m pip install goldpan` (from PyPI), with the extras you need: `goldpan[archive]` (HDF5),
 `goldpan[parquet]` (the native format), `goldpan[root]` (RQs in ROOT files), `goldpan[midas]` (MIDAS files). To work on it,
 clone this repository and `python -m pip install -e ".[archive,parquet,root,midas]" pytest`; an edit to a module then takes
-effect at once. `check_environment.py` warns if it is not installed. How to contribute: `CONTRIBUTING.md`.
+effect at once. `check_environment.py` warns if it is not installed. **Documentation:** https://villano-lab.github.io/goldpan/ (the reference is read from the docstrings). How to contribute: `CONTRIBUTING.md`.
 
 ```python
 from goldpan import quantities as q

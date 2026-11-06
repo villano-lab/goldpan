@@ -1,0 +1,5 @@
+# What builds the documentation (.github/workflows/docs.yml). Exact versions, so a page does not change by itself.
+sphinx==9.1.1
+furo==2025.12.19
+myst-parser==5.1.0
+sphinx-copybutton==0.5.2
