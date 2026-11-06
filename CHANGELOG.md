@@ -6,9 +6,13 @@ goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/N
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-11-05
+
+No change to the code: the package is the code of 0.3.2. This release carries the new documentation address in its metadata.
+
 ### Added
 
-- The documentation of goldpan (Sphinx, `docs/`): how the pieces fit, guides, and the reference read from the docstrings, at https://villano-lab.github.io/goldpan/. A workflow builds it with warnings as errors for every pull request that touches `docs/`, `src/` or `pyproject.toml`, and deploys it to GitHub Pages when a release reaches `main` (or when run by hand). It replaces the pages `docs/api/` that NSDF-Data built from this package. The *Documentation* link of the package on PyPI points here from the next release.
+- The documentation of goldpan (Sphinx, `docs/`): how the pieces fit, guides, and the reference read from the docstrings, at https://villano-lab.github.io/goldpan/. A workflow builds it with warnings as errors for every pull request that touches `docs/`, `src/` or `pyproject.toml`, and deploys it to GitHub Pages when a release reaches `main` (or when run by hand). It replaces the pages `docs/api/` that NSDF-Data built from this package. The *Documentation* link of the package on PyPI points here from 0.3.3 (the releases before it keep the old NSDF-Data address, where a page now says the documentation moved).
 
 ## [0.3.2] - 2026-11-05
 
