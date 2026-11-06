@@ -1,4 +1,4 @@
-"""The conformance test of an adapter, for the people who write one (see the developer quick-sheet "Writing an adapter").
+"""The conformance test of an adapter, for the people who write one (see the guide "Writing an adapter" in the documentation).
 
 Use it like this::
 
