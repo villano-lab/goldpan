@@ -7,7 +7,7 @@
 | `Events` | An immutable container of one detector's events: the traces of each channel and segment (read-only arrays), and one record per event of the quantities, keyed by `series`, `dump` and `event`. | {py:mod}`goldpan.data` |
 | Readout | How the data were sampled: `pretrigger_samples`, `glitch_samples`, `sample_period_s`. A `PulseConfig`, with presets such as `DCRC_RUN76` and `Z7` (to be replaced by readouts that come from a registry). **No defaults.** | {py:mod}`goldpan.config` |
 | Adapter | The only code that knows a file format: it turns idx dumps, MIDAS files, Parquet or ROOT RQ files into `Events` (or a table of quantities) and, where possible, writes them. | {py:mod}`goldpan.adapters` |
-| Registry | The facts about the detectors (number, type, readout, which channel is wired where in a file format), kept **outside** the package in folders of TOML files that a dataset definition names with `registry = [...]`; the library holds only the mechanism, so the folder can be a repository of its own. | {py:mod}`goldpan.registry` |
+| Registry | The facts about the detectors (number, type, readout, which channel is wired where in a file format), kept **outside** the package in **one** folder of TOML files per analysis (a repository of its own, such as `goldreg-R76`) that a dataset definition names with `registry = "..."`; the library holds only the mechanism. | {py:mod}`goldpan.registry` |
 | Dataset definition | One TOML file naming the raw files, how to read them and the processing to run. Read by goldpan and by goldsluice. | {py:mod}`goldpan.dataset` |
 
 ## The flow

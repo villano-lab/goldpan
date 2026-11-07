@@ -6,7 +6,10 @@ goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/N
 
 ## [Unreleased]
 
-## [0.3.4] - 2026-11-06
+### Changed
+
+- **There is one registry per analysis** (task 70 of NSDF-Data). `goldpan.registry.load` takes exactly one folder: two folders are a `ValueError`, `GOLDPAN_REGISTRY` names one folder (it no longer adds to the folders given, and a list separated like `PATH` is refused), and a folder given that differs from the one the variable names is refused too. The dataset definition's `[dataset] registry` is one folder (`registry = "../goldreg-R76"`; a list of one still works, a list of several is an error), and `FORMAT_VERSION` of the dataset definition is 8. A detector that two analyses share is copied into the second registry (its `evidence` says where from). The registries of the Run 76 and Z7 analyses are `goldreg-R76` and `goldreg-Z7`. Breaking for a definition or a script that names two registry folders: give one, with the records copied into it.
+
 
 The code is the code of 0.3.3 (only a docstring changed). This release publishes the guide pages of the documentation.
 

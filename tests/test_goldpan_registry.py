@@ -57,11 +57,24 @@ def test_load_reads_every_toml_file_of_the_folders_and_checks_it(tmp_path):
     assert registry.load(use_environment=False).detectors() == {}                # no folders: an empty registry
 
 
-def test_the_environment_variable_adds_folders(tmp_path, monkeypatch):
+def test_the_environment_variable_names_the_one_registry_when_none_is_given(tmp_path, monkeypatch):
     other = folder(tmp_path, TOY.replace("TOY", "OTHER"), sub="other")
     monkeypatch.setenv(registry.ENV_VAR, str(other))
     assert sorted(registry.load().detectors()) == ["OTHER"]
     assert registry.load(use_environment=False).detectors() == {}
+    assert sorted(registry.load(other).detectors()) == ["OTHER"]                  # the same folder given and named: one registry
+
+
+def test_there_is_one_registry_two_folders_are_refused(tmp_path, monkeypatch):
+    a, b = folder(tmp_path, sub="a"), folder(tmp_path, TOY.replace("TOY", "OTHER"), sub="b")
+    with pytest.raises(ValueError, match="one folder, and 2 were given"):
+        registry.load(a, b, use_environment=False)
+    monkeypatch.setenv(registry.ENV_VAR, str(a))
+    with pytest.raises(ValueError, match="two registries.*not the one GOLDPAN_REGISTRY names"):
+        registry.load(b)                                                          # a folder that is not the one the variable names
+    monkeypatch.setenv(registry.ENV_VAR, f"{a}{__import__('os').pathsep}{b}")
+    with pytest.raises(ValueError, match="must name one folder"):
+        registry.load()
 
 
 def test_a_readout_is_a_registry_record_or_a_preset_of_goldpan_config(tmp_path):
@@ -93,9 +106,11 @@ def test_a_bad_record_is_refused_with_a_message(tmp_path, text, message):
 
 
 def test_a_name_may_be_defined_once_and_a_missing_folder_is_an_error(tmp_path):
-    a, b = folder(tmp_path, sub="a"), folder(tmp_path, sub="b")
-    with pytest.raises(ValueError, match="already defined in .*toy.toml"):
-        registry.load(a, b, use_environment=False)
+    a = folder(tmp_path, sub="a")
+    folder(tmp_path, name="again.toml", sub="a")                                 # the same name in a second file of the folder
+    with pytest.raises(ValueError, match="already defined in .*again.toml"):
+        registry.load(a, use_environment=False)
+    (a / "again.toml").unlink()
     folder(tmp_path, TOY.replace("TOY", "TWO"), name="two.toml", sub="a")        # two files of a folder: different names are fine
     assert sorted(registry.load(a, use_environment=False).detectors()) == ["TOY", "TWO"]
     with pytest.raises(ValueError, match="does not exist"):
@@ -181,7 +196,7 @@ def test_root_detector_comes_from_the_registry_unless_the_file_writes_it(tmp_pat
 
 
 def test_a_bad_registry_key_or_folder_is_refused(tmp_path, raw):
-    with pytest.raises(ValueError, match="registry must be a folder or a list of folders"):
+    with pytest.raises(ValueError, match=r"registry must be a folder \(a string\)"):
         dataset.load(write(tmp_path, spec_text(raw, top='name = "t"\noutput = "o"\nregistry = 3')))
     with pytest.raises(ValueError, match="does not exist"):
         dataset.load(write(tmp_path, spec_text(raw, top='name = "t"\noutput = "o"\nregistry = ["nowhere"]'), "m.toml"))
@@ -192,3 +207,12 @@ def test_relative_registry_folders_start_at_the_definition_file(tmp_path, raw):
     folder(tmp_path, sub="sub/reg")
     spec = dataset.load(write(tmp_path, spec_text(raw, top='name = "t"\noutput = "o"\nregistry = ["sub/reg"]')))
     assert spec.registry.has_detector("TOY")
+    spec = dataset.load(write(tmp_path, spec_text(raw, top='name = "t"\noutput = "o"\nregistry = "sub/reg"'), "s.toml"))     # a string is the usual form
+    assert spec.registry.has_detector("TOY")
+
+
+def test_a_definition_names_one_registry_not_two(tmp_path, raw):
+    folder(tmp_path, sub="a")
+    folder(tmp_path, TOY.replace("TOY", "OTHER"), sub="b")
+    with pytest.raises(ValueError, match="registry names 2 folders; there is one registry per analysis"):
+        dataset.load(write(tmp_path, spec_text(raw, top='name = "t"\noutput = "o"\nregistry = ["a", "b"]')))

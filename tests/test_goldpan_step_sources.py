@@ -64,5 +64,5 @@ def test_dump_writes_and_reads_back_a_step_with_sources(tmp_path, raw):
     assert again.steps[0].sources == ("b",) and json.dumps(again.raw, default=str) == json.dumps(spec.raw, default=str)
 
 
-def test_the_format_version_says_7():
-    assert dataset.FORMAT_VERSION == 7
+def test_the_format_version_says_8():
+    assert dataset.FORMAT_VERSION == 8

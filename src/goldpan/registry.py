@@ -3,8 +3,7 @@ pretrigger window, a glitch and a sample period are set), and the detectors (the
 named channel is wired in a given file format).
 
 **This module is the mechanism only.** No detector of any experiment is written in `goldpan`; the records are data and live
-outside the package, in folders of TOML files (for the Run 76 detector of this project, the `registry/` folder of the
-repository, which is laid out so it can become a repository of its own). The readout presets `DCRC_RUN76` and `Z7` of
+outside the package, in folders of TOML files (for the Run 76 detector of this project, the repository `goldreg-R76`). The readout presets `DCRC_RUN76` and `Z7` of
 `goldpan.config` are older and stay where they are; a registry may define readouts too, and a name is looked up in the registry
 first and then among those presets. A registry is built from *sources*; a folder
 of TOML files is the first kind, and anything with a `load()` method that yields `(origin, tables)` pairs can take its place
@@ -12,12 +11,14 @@ later (a Git repository, a database) without a change anywhere else::
 
     from goldpan import registry
 
-    reg = registry.load("~/NSDF-Data/registry")        # one or more folders; the environment variable GOLDPAN_REGISTRY is added
+    reg = registry.load("~/goldreg-R76")               # one folder; without one, the environment variable GOLDPAN_REGISTRY names it
     reg.readout_config("DCRC_RUN76")                   # a goldpan.config.PulseConfig (a preset, or the registry's own readout)
     reg.detector("NAI-S2").number                      # 1
     reg.detector("NAI-S2").read_defaults("idx")        # {'channels': {...}, 'roles': {...}}: the defaults of [sources.read]
 
-A dataset definition file names the folders in `[dataset] registry = [...]` (see `goldpan.dataset`), and a source whose
+There is **one registry per analysis** (a folder, in a repository of its own such as `goldreg-R76`); goldpan refuses two. A detector
+that two analyses share is copied into the second registry, with its evidence saying where from. A dataset definition file names
+the folder in `[dataset] registry = "..."` (see `goldpan.dataset`), and a source whose
 `detector` is a name in the registry takes its readout, its channels and its roles from there. Anything written in the
 definition file itself wins over the registry, key by key.
 
@@ -65,7 +66,8 @@ FORMAT_VERSION = 1
 """The version of the registry files; a reader refuses a newer one."""
 
 ENV_VAR = "GOLDPAN_REGISTRY"
-"""Folders to add to every registry opened with `load`, separated like `PATH` (`os.pathsep`)."""
+"""The one registry folder that `load` opens when it is given none. Exactly one: a registry is a single folder (several folders, or
+a list separated like `PATH`, are refused)."""
 
 STATUSES = ("confirmed", "inferred")
 
@@ -265,13 +267,22 @@ class Registry:
 
 @status(DONE)
 def load(*folders, use_environment: bool = True) -> Registry:
-    """A `Registry` of the TOML files in `folders` (and of the folders of the environment variable `GOLDPAN_REGISTRY`, unless
-    `use_environment` is false). An empty registry if there are none. `ValueError` for a folder that does not exist, a file that
-    is not valid, or a name that two files define."""
-    sources = [FolderSource(f) for f in folders]
-    env = os.environ.get(ENV_VAR, "") if use_environment else ""
-    sources += [FolderSource(p) for p in env.split(os.pathsep) if p.strip()]
-    return Registry(sources)
+    """The `Registry` of the TOML files in **one** folder: the one given, or else the one named by the environment variable
+    `GOLDPAN_REGISTRY` (unless `use_environment` is false). An empty registry if there is neither. There is exactly one registry
+    per analysis, so `ValueError` for two folders, for an environment variable that holds several, and for a folder given that
+    is not the one the environment variable names; also for a folder that does not exist, a file that is not valid, or a name
+    that two files define."""
+    if len(folders) > 1:
+        raise ValueError(f"a registry is one folder, and {len(folders)} were given ({', '.join(str(f) for f in folders)}); "
+                         "there is one registry per analysis (copy the records you need into it)")
+    env = os.environ.get(ENV_VAR, "").strip() if use_environment else ""
+    if os.pathsep in env:
+        raise ValueError(f"{ENV_VAR} must name one folder, not several: {env!r}")
+    if folders and env and Path(folders[0]).expanduser().resolve() != Path(env).expanduser().resolve():
+        raise ValueError(f"two registries: the folder given ({str(folders[0])!r}) is not the one {ENV_VAR} names ({env!r}); "
+                         f"use one registry (unset {ENV_VAR} or give the same folder)")
+    folder = folders[0] if folders else (env or None)
+    return Registry([] if folder is None else [FolderSource(folder)])
 
 
 @status(DONE)
