@@ -6,10 +6,6 @@ goldpan was the folder `python/` of [NSDF-Data](https://github.com/villano-lab/N
 
 ## [Unreleased]
 
-### Changed
-
-- **The `DCRC_RUN76` preset ends its pretrigger (baseline) window at 450 samples, not 500** (`goldpan.config`). The Run 76 trigger-locked pulses start at about sample 470 to 500 and a window ending at 500 let the rising edge into the baseline of some events, so `baseline_mean`, `baseline_std`, `current_max` and `integral` change a little. It follows the record `[readouts.DCRC_RUN76]` of the Run 76 registry (2026-11-02). Anything computed with the preset or its registry record should be computed again; code that gives its own `config` is not affected.
-
 ## [0.3.4] - 2026-11-06
 
 The code is the code of 0.3.3 (only a docstring changed). This release publishes the guide pages of the documentation.
