@@ -242,7 +242,7 @@ def test_step_channels_by_role_name_or_all(tmp_path):
 
 def test_readout_references_resolve_from_the_data_and_unknown_ones_are_refused():
     step = Step("peak", "all", {"g": "@readout.glitch_samples", "p": "@readout.pretrigger_samples", "n": 5, "s": "text"})
-    assert step.resolve(DCRC_RUN76) == {"g": 10, "p": 500, "n": 5, "s": "text"}
+    assert step.resolve(DCRC_RUN76) == {"g": 10, "p": 450, "n": 5, "s": "text"}
     with pytest.raises(ValueError, match="the readout has"):
         Step("peak", "all", {"g": "@readout.gain"}).resolve(DCRC_RUN76)
     with pytest.raises(ValueError, match="does not give sample_period_s"):
@@ -400,7 +400,7 @@ def test_stream_matches_says_whether_a_dataset_has_this_detector(tmp_path):
     assert parquet.stream_matches(tmp_path / "none", ev.detector) is None                  # no dataset yet: nothing to disagree with
     parquet.write(ev, tmp_path / "ds")
     assert parquet.stream_matches(tmp_path / "ds", ev.detector) is True
-    other = Detector("TOY", ev.detector.channels, Readout.single(N_SAMPLES, PulseConfig(450, 10, 0.8e-6)))         # another pretrigger window
+    other = Detector("TOY", ev.detector.channels, Readout.single(N_SAMPLES, PulseConfig(400, 10, 0.8e-6)))         # another pretrigger window
     assert parquet.stream_matches(tmp_path / "ds", other) is False
     assert parquet.stream_matches(tmp_path / "ds", Detector("OTHER", ev.detector.channels, ev.detector.readout)) is None   # no such stream
     with pytest.raises(ValueError, match="different detector"):
