@@ -7,7 +7,7 @@ The file (`r76.dataset.toml`)::
     name = "r76-nai"
     output = "r76-nai"                      # the processed quantities: a goldpan Parquet dataset (directory), keep it outside the repository
     # output_format = "root"                # optional: RQ-style ROOT files instead, with our names (needs root_detector = N too)
-    # registry = ["../registry"]            # optional: folders of detector records (goldpan.registry), relative to this file
+    # registry = "../goldreg-R76"           # optional: the one folder of detector records (goldpan.registry), relative to this file
     # metadata = "r76.series.csv"           # optional: run metadata per series (high voltage, trigger setting, ...), joined to the events when read
 
     [[sources]]                             # where the pulses come from; as many as you like
@@ -100,7 +100,8 @@ checks the definition the way `load` does before it writes anything, so a file i
 definition. Comments are not kept and nothing is added, so write `format_version` yourself if the file should say which format it uses.
 
 Nothing is assumed: the readout, the channels and every algorithm parameter are written down, in the file or in a registry it names.
-With `registry` (and/or the environment variable `GOLDPAN_REGISTRY`), a source whose `detector` is a name in the registry takes the
+With `registry` (or the environment variable `GOLDPAN_REGISTRY`; there is **one** registry, so a list of more than one folder, or a
+folder that differs from the one the variable names, is an error), a source whose `detector` is a name in the registry takes the
 readout, the `[sources.read]` defaults of its file format and, for ROOT output, `root_detector` from the detector's record
 (`goldpan.registry`); whatever the file itself states wins, key by key, and a readout that disagrees with the registry's is a warning.
 A detector name that is not in any registry is only a label, as before. `Dataset.open(path)` gives the same file to both packages::
@@ -141,12 +142,13 @@ from .data import Events
 from ._toml import _key, _value
 from .status import DONE, status
 
-FORMAT_VERSION = 7
+FORMAT_VERSION = 8
 """The version of the dataset definition file; a reader refuses a newer one. 2: `output_format` and `root_detector`. 3: `registry`
 (and a detector named in a registry supplies readout, `[sources.read]` defaults and `root_detector`). 4: a relative `output` goes
 under `$GOLDSLUICE_OUTPUT` when that is set. 5: `metadata`, a reference (a CSV file) to run metadata per series, joined to the events when they are read.
 6: steps may have a `name`, an `input` (the `name` of an earlier step whose result they read) and a `suffix` for their quantities.
-7: a step may have `sources`, the names of the sources it applies to (without it a step applies to all of them)."""
+7: a step may have `sources`, the names of the sources it applies to (without it a step applies to all of them).
+8: `registry` is one folder (a string, or a list of one): several are refused, as there is one registry per analysis."""
 
 STATUS_FILE = "_goldsluice_status.json"
 """The file in an output folder that says whether the last `goldsluice run` finished (see `output_status`)."""
@@ -259,7 +261,7 @@ class DatasetSpec:
     """The number `N` of the `zip<N>` tree of the ROOT output; required with `output_format = "root"` (written in the file, or the
     `number` of the registry's record of the detector), otherwise `None`."""
     registry: Optional[_registry.Registry] = None
-    """The registry the definition names (and the environment variable adds); empty if there is none."""
+    """The registry the definition names (or, if it names none, the environment variable); empty if there is none."""
     metadata: Optional[Path] = None
     """The file the definition names as its run metadata (`[dataset] metadata`), or `None`. It is not opened until it is used."""
 
@@ -344,7 +346,10 @@ def _spec(raw: Mapping, path: Path) -> DatasetSpec:
     folders = d.get("registry", [])
     folders = [folders] if isinstance(folders, str) else folders
     if not (isinstance(folders, list) and all(isinstance(f, str) for f in folders)):
-        raise ValueError(f"{path}: [dataset] registry must be a folder or a list of folders")
+        raise ValueError(f"{path}: [dataset] registry must be a folder (a string)")
+    if len(folders) > 1:
+        raise ValueError(f"{path}: [dataset] registry names {len(folders)} folders; there is one registry per analysis, so give one "
+                         "(copy the records you need from the other into it)")
     try:
         reg = _registry.load(*[(Path(f).expanduser() if Path(f).expanduser().is_absolute() else base / Path(f).expanduser())
                                for f in folders])
